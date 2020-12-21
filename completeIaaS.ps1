@@ -6,6 +6,8 @@
     $templatePath = (Get-Item .).FullName
     $templateFile = 'completeIaas.json'
     $template = $templatePath + '\' + $templateFile
+    $password = "mriganka"
+    $securePassword = $password | ConvertTo-SecureString -AsPlainText -Force
     }
     
     ### Create Resource Group
@@ -18,9 +20,12 @@
     
     ### Deploy Resources
     {
+    $additionalParameters = New-Object -TypeName Hashtable
+    $additionalParameters['vmAdminPassword'] = $securePassword
     New-AzResourceGroupDeployment `
         -Name $resourceDeploymentName `
         -ResourceGroupName $resourceGroupName `
         -TemplateFile $template `
+        @additionalParameters `
         -Verbose -Force
     }
