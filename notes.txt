@@ -14,3 +14,6 @@ Get-AzResourceProvider -ProviderNamespace Microsoft.Compute | Select-Object Reso
 // Invoking ARM Rest API
 
     Invoke-RestMethod -Uri https://management.azure.com/subscriptions/e9cdb8c6-08be-428a-9157-bd914789fdad/providers/Microsoft.Compute?api-version=2020-12-01
+
+// cancelling a current deployment
+POST https://management.azure.com/subscriptions/e9cdb8c6-08be-428a-9157-bd914789fdad/resourcegroups/mriganka-iaas/providers/Microsoft.Resources/deployments/mriganka-iaas-deployment/cancel?api-version=2020-06-01

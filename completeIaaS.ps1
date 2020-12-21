@@ -6,7 +6,7 @@
     $templatePath = (Get-Item .).FullName
     $templateFile = 'completeIaas.json'
     $template = $templatePath + '\' + $templateFile
-    $password = "mriganka"
+    $password = "Mircosoft@123"
     $securePassword = $password | ConvertTo-SecureString -AsPlainText -Force
     }
     
