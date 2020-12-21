@@ -1,0 +1,16 @@
+ARM Resources & Dependencies
+ARM resource providers and types
+ARM REST APIs
+
+
+// To get the resource providers and resource type that is available with the subscription
+Get-AzResourceProvider | Select-Object ProviderNamespace, ResourceTypes | Sort-Object ProviderNamespace
+
+// To get all the resource type for a resource provider
+Get-AzResourceProvider -ProviderNamespace Microsoft.Compute | Select-Object ResourceTypes,Location | Sort-Object ResourceTypes
+((Get-AzResourceProvider -ProviderNamespace Microsoft.Compute).ResourceTypes | where {$_.ResourceTypeName -eq 'virtualMachines'}).ApiVersion
+
+
+// Invoking ARM Rest API
+
+    Invoke-RestMethod -Uri https://management.azure.com/subscriptions/e9cdb8c6-08be-428a-9157-bd914789fdad/providers/Microsoft.Compute?api-version=2020-12-01
