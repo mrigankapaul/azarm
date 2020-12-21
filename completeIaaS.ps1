@@ -1,18 +1,18 @@
+### Define Deployment Variables
 {
-    $resourceGrouplocation = 'canadacentral'
-    $resourceGroupName = 'mriganka-paas'
-    $resourceDeploymentName = 'mriganka-paas-deployment'
+    $location = 'canadacentral'
+    $resourceGroupName = 'mriganka-iaas'
+    $resourceDeploymentName = 'mriganka-iaas-deployment'
     $templatePath = (Get-Item .).FullName
-    $templateFile = 'fullPaas.json'
-    $template = $templatePath + '/' + $templateFile
-    
+    $templateFile = 'completeIaas.json'
+    $template = $templatePath + '\' + $templateFile
     }
     
     ### Create Resource Group
     {
     New-AzResourceGroup `
         -Name $resourceGroupName `
-        -Location $resourceGrouplocation `
+        -Location $location `
         -Verbose -Force
     }
     

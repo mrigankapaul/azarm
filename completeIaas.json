@@ -1,0 +1,313 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountType": {
+            "type": "array",
+            "defaultValue": [ "Standard_LRS", "Standard_LRS", "Standard_GRS" ]
+        },
+        "storageAccountNamePrefix": {
+            "type": "string",
+            "defaultValue": "mriganka",
+            "minLength": 1
+        },
+        "vNetPrivateName": {
+            "type": "string",
+            "defaultValue": "mriganka-vnet-private",
+            "minlength": 1
+        },
+        "vNetAzureName": {
+            "type": "string",
+            "defaultValue": "mriganka-vnet-azure",
+            "minlength": 1
+        },
+        "privateGatewayName": {
+            "type": "string",
+            "defaultValue": "mriganka-gateway-private",
+            "minlength": 1
+        },
+        "privateGatewayPublicIpName": {
+            "type": "string",
+            "defaultValue": "mriganka-gateway-private-ip",
+            "minLength": 1
+        },
+        "vpnType": {
+            "type": "string",
+            "defaultValue": "RouteBased",
+            "allowedValues": [
+                "RouteBased", //site to site
+                "PolicyBased" // point to site
+            ]
+        },
+        "azureGatewayName": {
+            "type": "string",
+            "defaultValue": "mriganka-gateway-azure",
+            "minlength": 1
+        },
+        "azureGatewayPublicIpName": {
+            "type": "string",
+            "defaultValue": "mriganka-gateway-azure-ip",
+            "minLength": 1
+        },
+        "vpnPrivateConnectionName": {
+            "type": "string",
+            "defaultValue": "mriganka-vpn-private",
+            "minlength": 1
+        },
+        "vpnAzureConnectionName": {
+            "type": "string",
+            "defaultValue": "mriganka-vpn-azure",
+            "minlength": 1
+        },
+        "vpnSharedKey": {
+            "type": "string",
+            "defaultValue": "asodgfhjkaw4tu0w9vuijv0qu3409tu",
+            "minLength": 10
+        }
+    },
+    "functions": [],
+    "variables": {
+        "vNetPrivatePrefix": "172.16.0.0/16",
+        "vNetPrivateSubnet1Name": "private-subnet-1",
+        "vNetPrivateSubnet1Prefix": "172.16.1.0/24",
+        "vNetPrivateSubnet2Name": "private-subnet-2",
+        "vNetPrivateSubnet2Prefix": "172.16.2.0/24",
+        "vNetPrivateGatewayPrefix": "172.16.200.0/24",
+        "vNetAzurePrefix": "10.0.0.0/16",
+        "vNetAzureSubnet1Name": "azure-subnet-1",
+        "vNetAzureSubnet1Prefix": "10.0.1.0/24",
+        "vNetAzureSubnet2Name": "azure-subnet-2",
+        "vNetAzureSubnet2Prefix": "10.0.2.0/24",
+        "vNetAzureGatewayPrefix": "10.0.200.0/24",
+        "vNetPrivateId": "[resourceId('Microsoft.Network/virtualNetworks',parameters('vNetPrivateName'))]",
+        "privateGatewaySubnetId": "[concat(variables('vNetPrivateId'),'/subnets/','GatewaySubnet')]",
+        "privatePublicIpId": "[resourceId('Microsoft.Network/publicIPAddresses',parameters('privateGatewayPublicIpName'))]",
+        "vNetAzureId": "[resourceId('Microsoft.Network/virtualNetworks',parameters('vNetAzureName'))]",
+        "azureGatewaySubnetId": "[concat(variables('vNetAzureId'),'/subnets/','GatewaySubnet')]",
+        "azurePublicIpId": "[resourceId('Microsoft.Network/publicIPAddresses',parameters('azureGatewayPublicIpName'))]",
+    },
+    "resources": [
+        {
+            "name": "[concat(parameters('storageAccountNamePrefix'),copyIndex(),uniqueString(resourceGroup().id))]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "copy": {
+                "count": "[length(parameters('storageAccountType'))]",
+                "name": "storageCopy"
+            },
+            "tags": {
+                "displayName": "[concat(parameters('storageAccountNamePrefix'),copyIndex(),uniqueString(resourceGroup().id))]"
+            },
+            "location": "[resourceGroup().location]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "[parameters('storageAccountType')[copyIndex()]]"
+            }
+        },
+        {
+            "name": "[parameters('vNetPrivateName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2019-11-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "[parameters('vNetPrivateName')]"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNetPrivatePrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vNetPrivateSubnet1Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNetPrivateSubnet1Prefix')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vNetPrivateSubnet2Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNetPrivateSubnet2Prefix')]"
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "[variables('vNetPrivateGatewayPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[parameters('vNetAzureName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2019-11-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "[parameters('vNetAzureName')]"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNetAzurePrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vNetAzureSubnet1Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNetAzureSubnet1Prefix')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vNetAzureSubnet2Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNetAzureSubnet2Prefix')]"
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "[variables('vNetAzureGatewayPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[parameters('privateGatewayName')]",
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "apiVersion": "2019-11-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('privateGatewayPublicIpName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vNetPrivateName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "vnetGatewayConfig",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[variables('privateGatewaySubnetId')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[variables('privatePublicIpId')]"
+                            }
+                        }
+                    }
+                ],
+                "sku": {
+                    "name": "Basic",
+                    "tier": "Basic"
+                },
+                "gatewayType": "Vpn",
+                "vpnType": "[parameters('vpnType')]",
+                "enableBgp": false
+            }
+        },
+        {
+            "name": "[parameters('azureGatewayName')]",
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "apiVersion": "2019-11-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('azureGatewayPublicIpName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vNetAzureName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "vnetGatewayConfig",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[variables('azureGatewaySubnetId')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[variables('azurePublicIpId')]"
+                            }
+                        }
+                    }
+                ],
+                "sku": {
+                    "name": "Basic",
+                    "tier": "Basic"
+                },
+                "gatewayType": "Vpn",
+                "vpnType": "[parameters('vpnType')]",
+                "enableBgp": true
+            }
+        },
+        {
+            "name": "[parameters('privateGatewayPublicIpName')]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2019-11-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "[parameters('privateGatewayPublicIpName')]"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "name": "[parameters('azureGatewayPublicIpName')]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2019-11-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "[parameters('azureGatewayPublicIpName')]"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "name": "[parameters('vpnPrivateConnectionName')]",
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2019-11-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', parameters('privateGatewayName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', parameters('azureGatewayName'))]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', parameters('privateGatewayName'))]"
+                },
+                "virtualNetworkGateway2": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', parameters('azureGatewayName'))]"
+                },
+                "connectionType": "VNet2VNet",
+                "routingWeight": 3,
+                "sharedKey": "[parameters('vpnSharedKey')]"
+            }
+        },
+        {
+            "name": "[parameters('vpnAzureConnectionName')]",
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2019-11-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', parameters('privateGatewayName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', parameters('azureGatewayName'))]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', parameters('azureGatewayName'))]"
+                },
+                "virtualNetworkGateway2": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', parameters('privateGatewayName'))]"
+                },
+                "connectionType": "VNet2VNet",
+                "routingWeight": 3,
+                "sharedKey": "[parameters('vpnSharedKey')]"
+            }
+        }
+    ],
+    "outputs": {}
+}
