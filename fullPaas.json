@@ -31,6 +31,14 @@
         "webAppLocations": {
             "type": "array",
             "defaultValue": [ "canadacentral", "canadaeast", "eastus", "eastus2" ]
+        },
+        "repoURL": {
+            "type": "string",
+            "defaultValue": "https://github.com/davidebbo-test/Mvc52Application.git"
+        },
+        "branch": {
+            "type": "string",
+            "defaultValue": "master"
         }
     },
     "functions": [],
@@ -75,7 +83,22 @@
             "properties": {
                 "name": "[concat(parameters('webAppNamePrefix'),'-site-',copyIndex(),'-',uniqueString(resourceGroup().id))]",
                 "serverFarmId": "[concat(parameters('webAppNamePrefix'),'-', copyIndex(), '-', uniqueString(resourceGroup().id))]"
-            }
+            },
+            "resources": [
+                {
+                    "name": "web",
+                    "type": "sourcecontrols",
+                    "apiVersion": "2018-11-01",
+                    "dependsOn": [
+                        "[concat(parameters('webAppNamePrefix'),'-site-',copyIndex(),'-',uniqueString(resourceGroup().id))]"
+                    ],
+                    "properties": {
+                        "RepoUrl": "[parameters('repoURL')]",
+                        "branch": "[parameters('branch')]",
+                        "IsManualIntegration": true
+                    }
+                }
+            ]
         },
         {
             "name": "[concat(parameters('webAppNamePrefix'),'-tm-',uniqueString(resourceGroup().id))]",
