@@ -1,3 +1,5 @@
+// TO CREATE CUSTOM ROLE YOU NEED Azure AD Premium P1 and P2.
+
 ### Get Azure Subscription ID
 {
 

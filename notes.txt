@@ -34,5 +34,76 @@ RBAC
     // To get the list of actions of a role - (Get-AzRoleDefinition -Name 'Virtual Machine Contributor').Actions
             {Resource Provider}/{Resource Provider Type}/Action
             Microsoft.Compute/disks/delete
+    (Get-AzRoleDefinition -Name Reader).Actions
+    (Get-AzRoleDefinition -Name 'Network Contributor').Actions
+
+    Adding a user or group / Active Directory
+    Assigning a role to a user or gorup -> subscription
+
+    Add a role to a user
+    Add a role to a group and then assign the user to a role.
 
 
+{
+ “Name”: <NAME>,
+“Id”: <ID>,
+“IsCustom”: true, “Description”: <DESCRIPTION>, “Actions”: [
+<ACTION1>,
+<ACTION2> ],
+     “NotActions”: [
+           <NOTACTION1>,
+<NOTACTION2> ],
+     “AssignableScopes”: [
+           <SCOPE1>,
+<SCOPE2> ]
+}
+
+Actions - which operations can the role perform
+Not Actions - which operations role cannot perform
+Not Actions - Not a Deny rule
+“AssignableScopes” - Which Scope - (Subscription, resource group or resource)
+
+// Get available provider operations
+
+Get-AzProviderOperation Microsoft.Compute/* | select Operation, OperationName
+Get-AzProviderOperation Microsoft.Compute/*/action | select Operation, OperationName
+
+
+// Tagging
+    - Logically classify resources
+    - Business specific metadata
+    - Not supported by Azure Service Management (like VM, networking ot asm)
+    - supports 15 tags
+    - name 512 ch., value = 256 ch.
+
+RBAC
+    Control User Actions
+    Requires Authentication
+    Action-Limiting System
+Policy
+    Controls resource actions
+    requires Authentication
+    explicit allow/deny system
+
+{
+"if" : {
+"not" : {
+"field" : "location",
+"in" : ["northeurope" , "westeurope"]
+} },
+"then" : {
+"effect" : "deny"
+} 
+}
+
+
+basic structure - if/then/any
+Operator - Not/And/Or
+field - Name, kind, type, location, tags, alias
+condition - Equals, Like, Contains, In, ContainsKey
+Effect - Deny, Allow, Append
+
+
+New-AzPolicyDefinition `
+-Name regionPolicyDefinition `
+-Description ‘Allow resource creation in certain regions' ` -Policy 'path-to-policy-json-on-disk'
