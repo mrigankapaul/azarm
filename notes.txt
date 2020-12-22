@@ -17,3 +17,22 @@ Get-AzResourceProvider -ProviderNamespace Microsoft.Compute | Select-Object Reso
 
 // cancelling a current deployment
 POST https://management.azure.com/subscriptions/e9cdb8c6-08be-428a-9157-bd914789fdad/resourcegroups/mriganka-iaas/providers/Microsoft.Resources/deployments/mriganka-iaas-deployment/cancel?api-version=2020-06-01
+
+
+RBAC
+    Resource Level Access management
+    Controlled via Az AD
+    Az AD can be synchronized with on premise AD with AZ AD connect
+    Access can be inherited from parent resource
+    Owner - Full Access to a reource or a set of resources (Including the ability to give or remove permission)
+    Contributor - Owner - No ability to add or remove permission
+    Reader - Access Resource, View its properties
+    Az RM - RBAC Built in Roles - User, (Security) Group, (Security Principal)Application - They could be applied to a subscription, resource group or a resource
+
+
+    // To get all the roles - Get-AzRoleDefinition | select name
+    // To get the list of actions of a role - (Get-AzRoleDefinition -Name 'Virtual Machine Contributor').Actions
+            {Resource Provider}/{Resource Provider Type}/Action
+            Microsoft.Compute/disks/delete
+
+
